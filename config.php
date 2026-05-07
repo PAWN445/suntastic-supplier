@@ -1,0 +1,85 @@
+<?php
+// ============================================================
+//  SUPABASE CONFIGURATION
+//  I-palitan ang mga value na ito ng iyong Supabase credentials
+// ============================================================
+
+define('SUPABASE_URL', 'https://putxkxozaejlvmfjscko.supabase.co');  // <-- palitan
+define('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1dHhreG96YWVqbHZtZmpzY2tvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMTU1NTUsImV4cCI6MjA5MzY5MTU1NX0.Ky4w9MplOeb_X_l2444zCWjiJgN06uYUajPkGfu7zS4');               // <-- palitan
+define('TABLE_NAME', 'suppliers');
+
+// ============================================================
+//  HELPER CLASS PARA SA SUPABASE REST API
+// ============================================================
+
+class Supabase {
+    private $url;
+    private $key;
+
+    public function __construct() {
+        $this->url = SUPABASE_URL . '/rest/v1/' . TABLE_NAME;
+        $this->key = SUPABASE_ANON_KEY;
+    }
+
+    private function request($method, $endpoint = '', $data = null, $params = '') {
+        $ch = curl_init();
+        $url = $this->url . $endpoint . ($params ? '?' . $params : '');
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'apikey: ' . $this->key,
+            'Authorization: Bearer ' . $this->key,
+            'Content-Type: application/json',
+            'Prefer: return=representation'
+        ]);
+
+        if ($data) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        }
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        return ['code' => $httpCode, 'data' => json_decode($response, true)];
+    }
+
+    public function getAll($search = '') {
+        $params = 'order=created_at.desc';
+        if ($search) {
+            $params .= '&or=(item_name.ilike.*' . urlencode($search) . '*,supplier_name.ilike.*' . urlencode($search) . '*)';
+        }
+        return $this->request('GET', '', null, $params);
+    }
+
+    public function getById($id) {
+        return $this->request('GET', '', null, 'id=eq.' . $id);
+    }
+
+    public function insert($data) {
+        return $this->request('POST', '', $data);
+    }
+
+    public function update($id, $data) {
+        return $this->request('PATCH', '', $data, 'id=eq.' . $id);
+    }
+
+    public function delete($id) {
+        return $this->request('DELETE', '', null, 'id=eq.' . $id);
+    }
+
+    public function getBySupplier($supplierName) {
+        $params = 'supplier_name=eq.' . urlencode($supplierName) . '&order=created_at.desc';
+        return $this->request('GET', '', null, $params);
+    }
+
+    public function deleteBySupplier($supplierName) {
+        $params = 'supplier_name=eq.' . urlencode($supplierName);
+        return $this->request('DELETE', '', null, $params);
+    }
+}
+
+$db = new Supabase();
+?>
