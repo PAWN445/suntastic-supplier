@@ -4,8 +4,8 @@
 //  I-palitan ang mga value na ito ng iyong Supabase credentials
 // ============================================================
 
-$supabaseUrl = getenv('SUPABASE_URL'); 
-$supabaseKey = getenv('SUPABASE_ANON_KEY');
+define('SUPABASE_URL', getenv('SUPABASE_URL'));
+define('SUPABASE_ANON_KEY', getenv('SUPABASE_ANON_KEY'));
 define('TABLE_NAME', 'suppliers');
 
 // ============================================================
