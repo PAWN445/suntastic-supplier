@@ -4,8 +4,8 @@
 //  I-palitan ang mga value na ito ng iyong Supabase credentials
 // ============================================================
 
-define('SUPABASE_URL', rtrim(getenv('SUPABASE_URL')));  // <-- palitan
-define('SUPABASE_ANON_KEY', getenv('SUPABASE_ANON_KEY'));               // <-- palitan
+define('SUPABASE_URL', rtrim(getenv('SUPABASE_URL')));
+define('SUPABASE_ANON_KEY', getenv('SUPABASE_ANON_KEY'));
 define('TABLE_NAME', 'suppliers');
 
 // ============================================================
