@@ -1,0 +1,6 @@
+# Huwag i-commit ang .env — naglalaman ito ng secret keys!
+.env
+
+# System files
+.DS_Store
+Thumbs.db
