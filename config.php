@@ -4,8 +4,8 @@
 //  I-palitan ang mga value na ito ng iyong Supabase credentials
 // ============================================================
 
-define('SUPABASE_URL', 'https://putxkxozaejlvmfjscko.supabase.co');  // <-- palitan
-define('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1dHhreG96YWVqbHZtZmpzY2tvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMTU1NTUsImV4cCI6MjA5MzY5MTU1NX0.Ky4w9MplOeb_X_l2444zCWjiJgN06uYUajPkGfu7zS4');               // <-- palitan
+define('SUPABASE_URL', rtrim(getenv('SUPABASE_URL')));  // <-- palitan
+define('SUPABASE_ANON_KEY', getenv('SUPABASE_ANON_KEY'));               // <-- palitan
 define('TABLE_NAME', 'suppliers');
 
 // ============================================================
