@@ -1035,7 +1035,7 @@ function renderPreview() {
         <!-- Company Header -->
         <div class="pv-company-header">
             <div class="pv-company-logo">
-            <img src="/assets/images/suntastic_logo_png.png" alt="Logo" style="width:80px; height:80px; border-radius:6px; background:#fff; padding:4px">
+            <img src="/assets/images/suntastic_logo_png.png" alt="Logo" style="width:50px; height:50px; border-radius:6px; background:#fff; padding:4px">
             </div>
             <div class="pv-company-name">${he(coName)}</div>
             <div class="pv-company-tagline">BRIGHTEN UP YOUR LIFE</div>
