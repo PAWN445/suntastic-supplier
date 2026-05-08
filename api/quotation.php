@@ -1037,7 +1037,7 @@ function renderPreview() {
             <img src="/assets/images/suntastic_logo_png.png" alt="Logo" style="width:80px; height:80px; border-radius:6px; background:#fff; padding:4px">
             </div>
             <div class="pv-company-name">${he(coName)}</div>
-            <div class="pv-company-tagline">Solar Energy Solutions</div>
+            <div class="pv-company-tagline">BRIGHTEN UP YOUR LIFE</div>
             <div class="pv-company-addr">
                 ${he(coAddr)}<br>
                 Email: ${he(coEmail)}&nbsp;&nbsp;&nbsp;Tel: ${he(coTel)}
@@ -1224,7 +1224,7 @@ function exportPDF() {
     doc.setTextColor(...GREEN);
     doc.text(coName, pw/2, y, { align:'center' }); y += 5;
     doc.setFontSize(7); doc.setTextColor(140,140,140); doc.setFont('helvetica','normal');
-    doc.text('SOLAR ENERGY SOLUTIONS', pw/2, y, { align:'center' }); y += 4;
+    doc.text('BRIGHTEN UP YOUR LIFE', pw/2, y, { align:'center' }); y += 4;
     doc.setFontSize(8.5); doc.setTextColor(60,60,60);
     doc.text(coAddr, pw/2, y, { align:'center' }); y += 4;
     doc.text(`Email: ${coEmail}   Tel: ${coTel}`, pw/2, y, { align:'center' }); y += 5;
