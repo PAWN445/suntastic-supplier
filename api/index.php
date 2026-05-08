@@ -82,7 +82,7 @@ $totalItems    = count($items);
     <div class="header-inner">
         <div class="brand">
             <div class="brand-icon">
-                <img src="/assets/images/suntastic_logo_png.png" alt="Logo" style="width:40px; height:40px; border-radius:6px; background:#fff; padding:4px">
+                <img src="/assets/images/suntastic_logo_png.png" alt="Logo" style="width:40px; height:40px; border-radius:6px; padding:4px">
             </div>
             <div>
                 <h1 class="brand-name">Suntastic</h1>
