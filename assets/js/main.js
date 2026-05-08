@@ -47,6 +47,60 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(function() { alert.remove(); }, 500);
         }, 4000);
     });
+
+    // ── SUPPLIER PAGE SEARCH ─────────────────────────────────
+    var searchInput  = document.getElementById('supplierSearch');
+    if (!searchInput) return;
+
+    var clearBtn     = document.getElementById('searchClear');
+    var infoEl       = document.getElementById('searchInfo');
+    var rows         = document.querySelectorAll('.data-table tbody .table-row');
+    var subtotalRow  = document.querySelector('.subtotal-row');
+    var noResultsRow = document.getElementById('noResultsRow');
+
+    searchInput.addEventListener('input', function () {
+        filterSupplierItems(this.value.trim());
+    });
+
+    function filterSupplierItems(query) {
+        var q       = query.toLowerCase();
+        var visible = 0;
+
+        rows.forEach(function (row) {
+            var itemCell = row.querySelector('.td-item');
+            var text     = itemCell ? itemCell.textContent.trim().toLowerCase() : '';
+            var match    = q === '' || text.includes(q);
+            row.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+
+        // Hide subtotal row while filtering so totals don't mislead
+        if (subtotalRow) subtotalRow.style.display = q ? 'none' : '';
+
+        // Show "walang nahanap" row if zero results
+        if (noResultsRow) noResultsRow.style.display = (q && visible === 0) ? '' : 'none';
+
+        // Toggle clear button
+        if (clearBtn) clearBtn.style.display = q ? '' : 'none';
+
+        // Show results count
+        if (infoEl) {
+            if (q) {
+                infoEl.style.display = '';
+                infoEl.textContent   = visible + ' item' + (visible !== 1 ? 's' : '') + ' ang nahanap para sa "' + query + '"';
+            } else {
+                infoEl.style.display = 'none';
+            }
+        }
+    }
+
+    // Clear search
+    window.clearSupplierSearch = function (e) {
+        e.preventDefault();
+        searchInput.value = '';
+        filterSupplierItems('');
+        searchInput.focus();
+    };
 });
 
 // ── SINGLE DELETE MODAL ──────────────────────────────────────
@@ -83,7 +137,7 @@ function closeBulkModal() {
 function openModal(id) {
     var modal = document.getElementById(id);
     if (!modal) return;
-    modal.style.removeProperty('display'); // remove any inline display:none
+    modal.style.removeProperty('display');
     modal.classList.add('active');
 }
 

@@ -108,6 +108,24 @@ foreach ($items as $item) {
     </div>
     <?php endif; ?>
 
+    <!-- SEARCH BAR -->
+    <?php if (!empty($items)): ?>
+    <div class="search-wrap">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input
+                type="text"
+                id="supplierSearch"
+                class="search-input"
+                placeholder="Hanapin ang item..."
+                autocomplete="off"
+            >
+            <a href="#" class="search-clear" id="searchClear" style="display:none" onclick="clearSupplierSearch(event)">✕</a>
+        </div>
+        <p id="searchInfo" style="font-size:0.78rem; color:var(--text-muted); margin-top:6px; display:none;"></p>
+    </div>
+    <?php endif; ?>
+
     <!-- TABLE -->
     <div class="table-wrap">
         <?php if (empty($items)): ?>
@@ -183,6 +201,14 @@ foreach ($items as $item) {
                         <td></td>
                         <td class="subtotal-amount" colspan="3">
                             ₱<?= number_format($totalAmt, 2) ?>
+                        </td>
+                    </tr>
+
+                    <!-- NO RESULTS ROW -->
+                    <tr id="noResultsRow" style="display:none;">
+                        <td colspan="7" style="text-align:center; padding:3rem 1rem; color:var(--text-muted);">
+                            <div style="font-size:2rem; margin-bottom:8px;">🔍</div>
+                            <div style="font-size:0.9rem;">Walang item na nahanap</div>
                         </td>
                     </tr>
 
