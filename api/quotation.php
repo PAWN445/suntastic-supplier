@@ -21,6 +21,7 @@ $itemsJson = json_encode($allItems, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
 /* ── PAGE LAYOUT ─────────────────────────────────────────────── */
@@ -1182,15 +1183,91 @@ document.getElementById('delivToggle').addEventListener('change', function() {
     renderPreview();
 });
 
-// ── PDF EXPORT ────────────────────────────────────────────────
-function exportPDF() {
+// ── PDF EXPORT (html2canvas → jsPDF) ─────────────────────────
+async function exportPDF() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-    const pw = doc.internal.pageSize.getWidth();
-    const ph = doc.internal.pageSize.getHeight();
-    const GREEN = [139, 155, 117];
-    const DARKGRAY = [30, 30, 30];
+    const qNum = document.getElementById('qNumBadge').textContent;
+    const previewEl = document.getElementById('previewContent');
 
+    // Loading state
+    const btn = document.querySelector('.btn-xl-pdf');
+    const origHTML = btn.innerHTML;
+    btn.innerHTML = '⏳ Generating PDF...';
+    btn.disabled = true;
+
+    try {
+        // Capture the live preview as a high-res image
+        const canvas = await html2canvas(previewEl, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            windowWidth: previewEl.scrollWidth,
+            windowHeight: previewEl.scrollHeight,
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4',
+        });
+
+        const pageW  = doc.internal.pageSize.getWidth();   // 210mm
+        const pageH  = doc.internal.pageSize.getHeight();  // 297mm
+        const margin = 8;
+        const usableW = pageW - margin * 2;
+        const usableH = pageH - margin * 2;
+
+        const imgW = canvas.width;
+        const imgH = canvas.height;
+        const pxPerMm   = imgW / usableW;
+        const printedH  = imgH / pxPerMm;
+
+        if (printedH <= usableH) {
+            // Fits on a single page
+            doc.addImage(imgData, 'JPEG', margin, margin, usableW, printedH);
+        } else {
+            // Split into multiple pages via canvas slicing
+            const sliceHeightPx = Math.floor(usableH * pxPerMm);
+            let offsetPx = 0;
+            let pageNum  = 0;
+
+            while (offsetPx < imgH) {
+                if (pageNum > 0) doc.addPage();
+
+                const thisSlicePx = Math.min(sliceHeightPx, imgH - offsetPx);
+
+                const sliceCanvas = document.createElement('canvas');
+                sliceCanvas.width  = imgW;
+                sliceCanvas.height = thisSlicePx;
+                const ctx = sliceCanvas.getContext('2d');
+                ctx.drawImage(canvas, 0, -offsetPx);
+
+                const sliceData   = sliceCanvas.toDataURL('image/jpeg', 0.95);
+                const slicePrintH = thisSlicePx / pxPerMm;
+
+                doc.addImage(sliceData, 'JPEG', margin, margin, usableW, slicePrintH);
+
+                offsetPx += thisSlicePx;
+                pageNum++;
+            }
+        }
+
+        doc.save(`${qNum}_Quotation.pdf`);
+
+    } catch (err) {
+        console.error('PDF export error:', err);
+        alert('May error sa pag-export ng PDF. Tingnan ang console para sa details.');
+    } finally {
+        btn.innerHTML = origHTML;
+        btn.disabled  = false;
+    }
+}
+
+// ── EXCEL EXPORT ──────────────────────────────────────────────
+function exportExcel() {
     const qNum     = document.getElementById('qNumBadge').textContent;
     const coName   = v('coName');
     const coAddr   = v('coAddr');
@@ -1201,8 +1278,6 @@ function exportPDF() {
     const clientAddr = v('clientAddr');
     const contact  = v('clientContact');
     const tin      = v('clientTin');
-    const qDate    = fmtDate(v('qDate'));
-    const qValid   = fmtDate(v('qValid'));
     const note     = v('qNote');
     const warranty = v('qWarranty');
     const excl     = v('qExclusions');
@@ -1211,207 +1286,75 @@ function exportPDF() {
     const rows = getRows();
     const tots = calcTotals(rows);
 
-    let y = 10;
-
-    // Ref line
-    doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.setFont('helvetica','normal');
-    doc.text('Suntastic Solar — Quotation', 14, y);
-    doc.text(qNum, pw-14, y, { align:'right' });
-    y += 8;
-
-    // Company header (centered)
-    doc.setFontSize(14); doc.setFont('helvetica','bold');
-    doc.setTextColor(...GREEN);
-    doc.text(coName, pw/2, y, { align:'center' }); y += 5;
-    doc.setFontSize(7); doc.setTextColor(140,140,140); doc.setFont('helvetica','normal');
-    doc.text('BRIGHTEN UP YOUR LIFE', pw/2, y, { align:'center' }); y += 4;
-    doc.setFontSize(8.5); doc.setTextColor(60,60,60);
-    doc.text(coAddr, pw/2, y, { align:'center' }); y += 4;
-    doc.text(`Email: ${coEmail}   Tel: ${coTel}`, pw/2, y, { align:'center' }); y += 5;
-
-    // Divider
-    doc.setDrawColor(200,200,200); doc.line(14, y, pw-14, y); y += 5;
-
-    // QUOTATION SLIP title band
-    doc.setFillColor(...GREEN);
-    doc.rect(14, y, pw-28, 8, 'F');
-    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-    doc.text('QUOTATION SLIP', pw/2, y+5.5, { align:'center' }); y += 8;
-
-    // Info box with border
-    const infoH = 22;
-    doc.setDrawColor(170,170,170);
-    doc.rect(14, y, pw-28, infoH, 'S');
-    doc.setFontSize(8.5); doc.setFont('helvetica','normal'); doc.setTextColor(50,50,50);
-
-    const lx = 16, lx2 = pw/2 + 2;
-    const infoRows = [
-        ['Date:',         qDate,      'Valid Until:', qValid],
-        ['Company Name:', clientCo,   'Address:',     clientAddr],
-        ['Client Name:',  client,     '',             ''],
-        ['Tin No.:',      tin,        'Contact No.:',  contact],
-    ];
-    let iy = y + 5;
-    infoRows.forEach(row => {
-        doc.setFont('helvetica','bold');  doc.text(row[0], lx, iy);
-        doc.setFont('helvetica','normal'); doc.text(row[1], lx+26, iy, { maxWidth: pw/2-32 });
-        doc.setFont('helvetica','bold');  doc.text(row[2], lx2, iy);
-        doc.setFont('helvetica','normal'); doc.text(row[3], lx2+24, iy, { maxWidth: pw/2-28 });
-        iy += 5;
-    });
-    y += infoH + 4;
-
-    // Items table
-    const tableBody = rows.map((r,i) => [
-        r.num,
-        r.name + (r.desc ? `\n${r.desc}` : ''),
-        r.qty,
-        r.unit,
-        '₱ ' + fmt(r.price),
-        '₱ ' + fmt(r.amt)
-    ]);
-
-    doc.autoTable({
-        startY: y,
-        head: [['#', 'Item Description', 'Qty', 'Unit', 'Unit Price', 'Total']],
-        body: tableBody,
-        theme: 'grid',
-        headStyles: { fillColor: GREEN, textColor:[255,255,255], fontStyle:'bold', fontSize:8.5, halign:'center' },
-        bodyStyles: { fontSize:8.5, textColor:[30,30,30] },
-        alternateRowStyles: { fillColor:[249,249,249] },
-        columnStyles: {
-            0: { cellWidth:8,  halign:'center' },
-            1: { cellWidth:64 },
-            2: { cellWidth:12, halign:'center' },
-            3: { cellWidth:16, halign:'center' },
-            4: { cellWidth:28, halign:'right' },
-            5: { cellWidth:28, halign:'right' },
-        },
-        margin: { left:14, right:14 },
-        styles: { overflow:'linebreak' },
-    });
-    y = doc.lastAutoTable.finalY + 6;
-
-    // Totals
-    const totLines = [
-        ['Subtotal (VAT Exclusive):', tots.subtotal],
-    ];
-    if (tots.discOn && tots.discount > 0) totLines.push([`Discount:`, -tots.discount]);
-    totLines.push(['Delivery Fee:', tots.delivOn ? tots.delivFee : null]);
-    totLines.push(['Vat 12%:', tots.vatOn ? tots.vat : null]);
-    totLines.push(['TOTAL AMOUNT:', tots.total]);
-
-    const totX   = pw - 14 - 65;
-    const lblW   = 44;
-    const symX   = totX + lblW + 1;
-    const valX   = pw - 14;
-
-    totLines.forEach((line, i) => {
-        const isTotal = i === totLines.length - 1;
-        if (isTotal) {
-            doc.setFillColor(...GREEN);
-            doc.rect(totX, y-3.5, 65, 7, 'F');
-        }
-        doc.setFont('helvetica', isTotal ? 'bold' : 'normal');
-        doc.setFontSize(isTotal ? 9.5 : 8.5);
-        doc.setTextColor(isTotal ? 255 : 60, isTotal ? 255 : 60, isTotal ? 255 : 60);
-        doc.text(line[0], totX + lblW, y, { align:'right' });
-        doc.text('₱', symX, y);
-        const val = line[1] === null ? '-' : (line[1] < 0 ? `(${fmt(-line[1])})` : fmt(line[1]));
-        doc.text(val, valX, y, { align:'right' });
-
-        if (!isTotal) {
-            doc.setDrawColor(180,180,180);
-            doc.line(symX-1, y+1.5, valX, y+1.5);
-        }
-        y += 6;
-    });
-    y += 4;
-
-    // Note (blue italic)
-    if (note) {
-        doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.setTextColor(42,100,150);
-        const noteLines = doc.splitTextToSize(note, pw-28);
-        doc.text(noteLines, 14, y); y += noteLines.length * 4 + 4;
-    }
-
-    // Warranty section helper
-    function drawSection(title, body) {
-        if (!body) return;
-        if (y > ph - 40) { doc.addPage(); y = 14; }
-        doc.setFillColor(...GREEN);
-        doc.rect(14, y, pw-28, 7, 'F');
-        doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(255,255,255);
-        doc.text(title, pw/2, y+4.8, { align:'center' });
-        y += 9;
-        doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(40,40,40);
-        const lines = doc.splitTextToSize(body, pw-28);
-        if (y + lines.length*4.5 > ph-20) { doc.addPage(); y = 14; }
-        doc.text(lines, 14, y);
-        y += lines.length * 4.5 + 5;
-    }
-
-    drawSection('Warranty Terms and Conditions', warranty);
-    drawSection('Warranty Exclusions', excl);
-
-    // Payment
-    if (payment) {
-        if (y > ph - 30) { doc.addPage(); y = 14; }
-        doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(20,20,20);
-        const pLines = doc.splitTextToSize(payment, pw-28);
-        doc.text(pLines, 14, y); y += pLines.length * 4.5 + 5;
-    }
-
-    // Footer line
-    doc.setDrawColor(200,200,200); doc.line(14, ph-12, pw-14, ph-12);
-    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(160,160,160);
-    doc.text('Suntastic Solar — Supplier Management System', 14, ph-7);
-    doc.text(`Generated: ${new Date().toLocaleDateString('en-PH')}`, pw-14, ph-7, { align:'right' });
-
-    doc.save(`${qNum}_Quotation.pdf`);
-}
-
-// ── EXCEL EXPORT ──────────────────────────────────────────────
-function exportExcel() {
-    const qNum   = document.getElementById('qNumBadge').textContent;
-    const rows   = getRows();
-    const tots   = calcTotals(rows);
-
     const wb = XLSX.utils.book_new();
+
     const data = [
-        [v('coName')],
-        [v('coAddr')],
-        [`Email: ${v('coEmail')}   Tel: ${v('coTel')}`],
+        // Header
+        [coName],
+        [coAddr],
+        [`Email: ${coEmail}   Tel: ${coTel}`],
         [],
         ['QUOTATION SLIP'],
+        [`Quotation No: ${qNum}`],
         [],
-        ['Date:', fmtDate(v('qDate')), '', 'Valid Until:', fmtDate(v('qValid'))],
-        ['Company Name:', v('clientCo'), '', 'Address:', v('clientAddr')],
-        ['Client Name:', v('clientName'), '', 'Contact No.:', v('clientContact')],
-        ['TIN No.:', v('clientTin')],
+        // Client info
+        ['Date:',         fmtDate(v('qDate')),  '',  'Valid Until:',  fmtDate(v('qValid'))],
+        ['Company Name:', clientCo,              '',  'Address:',     clientAddr],
+        ['Client Name:',  client,               '',  'Contact No.:', contact],
+        ['TIN No.:',      tin],
         [],
-        ['#','Item Description','Description / Specs','Qty','Unit','Unit Price (₱)','Total (₱)'],
+        // Table header
+        ['#', 'Item Description', 'Specs / Brand', 'Qty', 'Unit', 'Unit Price (₱)', 'Total (₱)'],
+        // Item rows
         ...rows.map(r => [r.num, r.name, r.desc, r.qty, r.unit, r.price, r.amt]),
         [],
-        ['','','','','Subtotal (VAT Exclusive):','₱', tots.subtotal],
-        ...(tots.discOn && tots.discount > 0 ? [['','','','','Discount:','₱', -tots.discount]] : []),
-        ['','','','','Delivery Fee:','₱', tots.delivOn ? tots.delivFee : '-'],
-        ['','','','','VAT (12%):','₱', tots.vatOn ? tots.vat : '-'],
-        ['','','','','TOTAL AMOUNT:','₱', tots.total],
+        // Totals
+        ['', '', '', '', 'Subtotal (VAT Exclusive):', '₱', tots.subtotal],
+        ...(tots.discOn && tots.discount > 0
+            ? [['', '', '', '', 'Discount:', '₱', -tots.discount]]
+            : []),
+        ['', '', '', '', 'Delivery Fee:', '₱', tots.delivOn ? tots.delivFee : '-'],
+        ['', '', '', '', 'VAT (12%):', '₱', tots.vatOn ? tots.vat : '-'],
+        ['', '', '', '', 'TOTAL AMOUNT:', '₱', tots.total],
         [],
-        ['Note:', v('qNote')],
+        // Note
+        ...(note ? [['Note:', note], []] : []),
+        // Warranty
+        ['WARRANTY TERMS AND CONDITIONS'],
+        [warranty],
         [],
-        ['Warranty Terms & Conditions:'],
-        [v('qWarranty')],
+        // Exclusions
+        ['WARRANTY EXCLUSIONS'],
+        [excl],
         [],
-        ['Warranty Exclusions:'],
-        [v('qExclusions')],
-        [],
-        [v('qPayment')],
+        // Payment
+        [payment],
     ];
 
     const ws = XLSX.utils.aoa_to_sheet(data);
-    ws['!cols'] = [{wch:6},{wch:32},{wch:28},{wch:6},{wch:10},{wch:16},{wch:16}];
+
+    // Column widths
+    ws['!cols'] = [
+        { wch: 5  },  // A  #
+        { wch: 32 },  // B  Item
+        { wch: 26 },  // C  Specs
+        { wch: 6  },  // D  Qty
+        { wch: 10 },  // E  Unit
+        { wch: 20 },  // F  Unit Price
+        { wch: 20 },  // G  Total
+    ];
+
+    // Row heights — taller for text-heavy rows
+    const rowHeights = data.map(row => {
+        if (!row[0]) return { hpt: 8 };  // blank rows slim
+        const val = String(row[0] || '');
+        if (val === coName) return { hpt: 22 };
+        if (val === 'QUOTATION SLIP' || val === 'WARRANTY TERMS AND CONDITIONS' || val === 'WARRANTY EXCLUSIONS') return { hpt: 20 };
+        if (val === warranty || val === excl || val === payment) return { hpt: 60 };
+        return { hpt: 16 };
+    });
+    ws['!rows'] = rowHeights;
+
     XLSX.utils.book_append_sheet(wb, ws, 'Quotation');
     XLSX.writeFile(wb, `${qNum}_Quotation.xlsx`);
 }
