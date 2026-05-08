@@ -1033,7 +1033,9 @@ function renderPreview() {
 
         <!-- Company Header -->
         <div class="pv-company-header">
-            <div class="pv-company-logo">☀️</div>
+            <div class="pv-company-logo">
+            <img src="/assets/images/suntastic_logo_png.png" alt="Logo" style="width:32px; height:32px; border-radius:6px; background:#fff; padding:4px">
+            </div>
             <div class="pv-company-name">${he(coName)}</div>
             <div class="pv-company-tagline">Solar Energy Solutions</div>
             <div class="pv-company-addr">
