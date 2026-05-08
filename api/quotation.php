@@ -1046,7 +1046,7 @@ function renderPreview() {
         </div>
 
         <!-- Title -->
-        <div class="pv-title-band">QUOTATION SLIP</div>
+        <div class="pv-title-band">QUOTATION</div>
 
         <!-- Info Box -->
         <div class="pv-info-box">
