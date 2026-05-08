@@ -45,6 +45,32 @@ $totalItems    = count($items);
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        /* Quotation button */
+        .btn-quotation {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid rgba(139, 155, 117, 0.5);
+            background: rgba(139, 155, 117, 0.1);
+            color: #b8cc99;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-quotation:hover {
+            background: rgba(139, 155, 117, 0.2);
+            border-color: rgba(139, 155, 117, 0.8);
+            color: #cde0b0;
+            transform: translateY(-1px);
+        }
+    </style>
 </head>
 <body>
 
@@ -61,9 +87,14 @@ $totalItems    = count($items);
                 <span class="brand-sub">SUPPLIER MANAGEMENT</span>
             </div>
         </div>
-        <a href="add.php" class="btn btn-primary">
-            <span class="btn-icon">+</span> Magdagdag
-        </a>
+        <div class="header-actions">
+            <a href="quotation.php" class="btn-quotation">
+                📄 Quotation
+            </a>
+            <a href="add.php" class="btn btn-primary">
+                <span class="btn-icon">+</span> Magdagdag
+            </a>
+        </div>
     </div>
 </header>
 
