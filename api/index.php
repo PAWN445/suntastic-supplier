@@ -88,7 +88,7 @@ $totalItems    = count($items);
             </div>
         </div>
         <div class="header-actions">
-            <a href="quotation.php" class="btn-quotation">
+            <a href="/quotation.php" class="btn-quotation">
                 📄 Quotation
             </a>
             <a href="add.php" class="btn btn-primary">

@@ -1,5 +1,5 @@
 <?php
-require_once 'config.php';
+require_once __DIR__ . '/config.php';
 
 // Fetch all supplier items for the picker
 $result   = $db->getAll('');
@@ -15,7 +15,7 @@ $itemsJson = json_encode($allItems, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
 
     <!-- Export libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -607,7 +607,7 @@ input:checked + .sw-track::before { transform: translateX(16px); }
                 <span class="brand-sub">SUPPLIER MANAGEMENT</span>
             </div>
         </div>
-        <a href="index.php" class="btn btn-outline">← Bumalik</a>
+        <a href="/index.php" class="btn btn-outline">← Bumalik</a>
     </div>
 </header>
 
