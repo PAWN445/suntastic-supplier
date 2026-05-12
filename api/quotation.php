@@ -979,7 +979,7 @@ function renderPreview() {
     const rows  = getRows();
     const tots  = calcTotals(rows);
 
-    // Items rows HTML
+    // Items rows HTML — Unit Price column HIDDEN in preview
     let itemsHtml = rows.map((r,i) => `
         <tr style="${i%2===0?'':'background:#f9f9f9'}">
             <td>${r.num}</td>
@@ -987,11 +987,10 @@ function renderPreview() {
             </td>
             <td>${r.qty}</td>
             <td>${he(r.unit)}</td>
-            <td style="text-align:right">₱ ${fmt(r.price)}</td>
             <td style="text-align:right">₱ ${fmt(r.amt)}</td>
         </tr>`).join('');
 
-    if (!itemsHtml) itemsHtml = `<tr><td colspan="6" style="color:#bbb;text-align:center;padding:12px;font-size:10px;">Walang items pa</td></tr>`;
+    if (!itemsHtml) itemsHtml = `<tr><td colspan="5" style="color:#bbb;text-align:center;padding:12px;font-size:10px;">Walang items pa</td></tr>`;
 
     // Totals HTML
     let totHtml = `
@@ -1072,7 +1071,6 @@ function renderPreview() {
                     <th style="text-align:left">Item Description</th>
                     <th style="width:36px">Qty</th>
                     <th style="width:40px">Unit</th>
-                    <th style="width:80px">Unit Price</th>
                     <th style="width:80px">Total</th>
                 </tr>
             </thead>
