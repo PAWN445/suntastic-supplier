@@ -1187,6 +1187,99 @@ async function exportPDF() {
     const qNum = document.getElementById('qNumBadge').textContent;
     const previewEl = document.getElementById('previewContent');
 
+    const btn = document.querySelector('.btn-xl-pdf');
+    const origHTML = btn.innerHTML;
+    btn.innerHTML = '⏳ Generating PDF...';
+    btn.disabled = true;
+
+    // ── temporarily remove overflow clipping so html2canvas
+    //    captures the FULL content height ──────────────────────
+    const previewPanel = document.querySelector('.preview-panel');
+    const savedOverflow       = previewPanel.style.overflow;
+    const savedBorderRadius   = previewPanel.style.borderRadius;
+    previewPanel.style.overflow     = 'visible';
+    previewPanel.style.borderRadius = '0';
+
+    try {
+        const canvas = await html2canvas(previewEl, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            width:        previewEl.scrollWidth,
+            height:       previewEl.scrollHeight,   // ← full height, not clipped
+            windowWidth:  previewEl.scrollWidth,
+            windowHeight: previewEl.scrollHeight,
+            scrollX: 0,
+            scrollY: -window.scrollY,               // account for page scroll
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4',
+        });
+
+        const pageW   = doc.internal.pageSize.getWidth();   // 210mm
+        const pageH   = doc.internal.pageSize.getHeight();  // 297mm
+        const margin  = 8;
+        const usableW = pageW - margin * 2;
+        const usableH = pageH - margin * 2;
+
+        const imgW       = canvas.width;
+        const imgH       = canvas.height;
+        const pxPerMm    = imgW / usableW;
+        const printedH   = imgH / pxPerMm;
+
+        if (printedH <= usableH) {
+            doc.addImage(imgData, 'JPEG', margin, margin, usableW, printedH);
+        } else {
+            const sliceHeightPx = Math.floor(usableH * pxPerMm);
+            let offsetPx = 0;
+            let pageNum  = 0;
+
+            while (offsetPx < imgH) {
+                if (pageNum > 0) doc.addPage();
+
+                const thisSlicePx = Math.min(sliceHeightPx, imgH - offsetPx);
+
+                const sliceCanvas     = document.createElement('canvas');
+                sliceCanvas.width     = imgW;
+                sliceCanvas.height    = thisSlicePx;
+                const ctx             = sliceCanvas.getContext('2d');
+                ctx.drawImage(canvas, 0, -offsetPx);
+
+                const sliceData   = sliceCanvas.toDataURL('image/jpeg', 0.95);
+                const slicePrintH = thisSlicePx / pxPerMm;
+
+                doc.addImage(sliceData, 'JPEG', margin, margin, usableW, slicePrintH);
+
+                offsetPx += thisSlicePx;
+                pageNum++;
+            }
+        }
+
+        doc.save(`${qNum}_Quotation.pdf`);
+
+    } catch (err) {
+        console.error('PDF export error:', err);
+        alert('May error sa pag-export ng PDF. Tingnan ang console para sa details.');
+    } finally {
+        // ── restore original styles ───────────────────────────
+        previewPanel.style.overflow     = savedOverflow;
+        previewPanel.style.borderRadius = savedBorderRadius;
+
+        btn.innerHTML = origHTML;
+        btn.disabled  = false;
+    }
+}
+    const { jsPDF } = window.jspdf;
+    const qNum = document.getElementById('qNumBadge').textContent;
+    const previewEl = document.getElementById('previewContent');
+
     // Loading state
     const btn = document.querySelector('.btn-xl-pdf');
     const origHTML = btn.innerHTML;
