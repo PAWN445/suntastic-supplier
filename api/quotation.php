@@ -235,6 +235,7 @@ input:checked + .sw-track::before { transform: translateX(16px); }
 .btn-xl:hover  { filter: brightness(1.1); transform: translateY(-1px); }
 .btn-xl:active { transform: translateY(0); }
 .btn-xl-save  { background: linear-gradient(135deg,#1e40af,#3b82f6); color:#fff; }
+.btn-xl-copy  { background: linear-gradient(135deg,#6d28d9,#8b5cf6); color:#fff; }
 .btn-xl-pdf   { background: linear-gradient(135deg,#c0392b,#e74c3c); color:#fff; }
 .btn-xl-excel { background: linear-gradient(135deg,#1d6f42,#21a366); color:#fff; }
 
@@ -273,6 +274,7 @@ input:checked + .sw-track::before { transform: translateX(16px); }
 .save-status-badge.new      { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); }
 .save-status-badge.saved    { background: rgba(34,197,94,0.12);   color: #4ade80; }
 .save-status-badge.unsaved  { background: rgba(245,158,11,0.12);  color: var(--sun); }
+.save-status-badge.copy     { background: rgba(139,92,246,0.15);  color: #a78bfa; }
 
 /* ── LIVE PREVIEW PANEL ──────────────────────────────────────── */
 .preview-panel {
@@ -496,6 +498,13 @@ input:checked + .sw-track::before { transform: translateX(16px); }
     cursor: pointer; font-weight: 600; transition: background 0.15s;
 }
 .sq-btn-load:hover { background: rgba(245,158,11,0.22); }
+.sq-btn-copy {
+    background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3);
+    border-radius: 6px; color: #a78bfa;
+    padding: 0.3rem 0.65rem; font-size: 0.74rem;
+    cursor: pointer; font-weight: 600; transition: background 0.15s;
+}
+.sq-btn-copy:hover { background: rgba(139,92,246,0.22); }
 .sq-btn-del {
     background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
     border-radius: 6px; color: #f87171;
@@ -519,6 +528,7 @@ input:checked + .sw-track::before { transform: translateX(16px); }
 .save-toast.show    { opacity: 1; transform: translateY(0); }
 .save-toast.success { border-color: rgba(34,197,94,0.4); }
 .save-toast.error   { border-color: rgba(239,68,68,0.4); }
+.save-toast.copy    { border-color: rgba(139,92,246,0.5); }
 
 /* ── PAGE HEADING ────────────────────────────────────────────── */
 .pg-heading {
@@ -748,6 +758,15 @@ Account Name: SUNTASTIC SOLAR CORP.</textarea>
                         <polyline points="7 3 7 8 15 8"/>
                     </svg>
                     I-save ang Quotation
+                </button>
+
+                <!-- Save as Copy -->
+                <button class="btn-xl btn-xl-copy" id="btnCopy" onclick="saveAsNewCopy()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                    I-save bilang Bagong Kopya
                 </button>
 
                 <!-- Load saved -->
@@ -1297,6 +1316,51 @@ async function saveQuotation() {
     }
 }
 
+// ── SAVE AS NEW COPY ─────────────────────────────────────────
+async function saveAsNewCopy() {
+    const btn  = document.getElementById('btnCopy');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '⏳ Gumagawa ng kopya...';
+    btn.disabled  = true;
+
+    // Generate a fresh quotation number for the copy
+    const today = new Date();
+    const yr    = String(today.getFullYear()).slice(-2);
+    const mo    = String(today.getMonth() + 1).padStart(2, '0');
+    const rnd   = String(Math.floor(Math.random() * 9000) + 1000);
+    const newQNum = `QT-${yr}${mo}-${rnd}`;
+
+    // Collect current form data but strip the existing ID so it saves as NEW record
+    const payload = collectFormData();
+    delete payload.id;
+    payload.quotation_number = newQNum;
+
+    try {
+        const res  = await fetch('/quotation_api.php?action=save', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(payload)
+        });
+        const json = await res.json();
+
+        if (json.ok) {
+            // Switch context to the new copy
+            currentQuotationId = json.data?.id || null;
+            document.getElementById('qNumBadge').textContent = newQNum;
+            isDirty = false;
+            updateSaveBadge();
+            showToast('📋 Na-save ang bagong kopya! Naka-edit ka na ng kopya.', 'copy');
+        } else {
+            showToast('❌ ' + (json.message || 'Error sa pag-kopya.'), 'error');
+        }
+    } catch (e) {
+        showToast('❌ Network error.', 'error');
+    } finally {
+        btn.innerHTML = orig;
+        btn.disabled  = false;
+    }
+}
+
 // ── NEW BLANK QUOTATION ───────────────────────────────────────
 function newQuotation() {
     if (isDirty && !confirm('May hindi pa na-save na pagbabago. Magpatuloy ba?')) return;
@@ -1371,6 +1435,7 @@ function renderSavedList(list) {
             </div>
             <div class="sq-item-actions">
                 <button class="sq-btn-load" onclick="loadQuotation('${escJs(q.id)}')">✏ I-edit</button>
+                <button class="sq-btn-copy" onclick="copyFromList('${escJs(q.id)}', this)">📋 Kopya</button>
                 <button class="sq-btn-del"  onclick="deleteQuotation('${escJs(q.id)}', this)">🗑</button>
             </div>
         </div>`;
@@ -1395,6 +1460,61 @@ async function loadQuotation(id) {
         }
     } catch (e) {
         showToast('❌ Network error.', 'error');
+    }
+}
+
+// ── COPY FROM SAVED LIST ──────────────────────────────────────
+async function copyFromList(id, btnEl) {
+    if (isDirty && !confirm('May hindi pa na-save na pagbabago sa kasalukuyang quotation. Magpatuloy ba?')) return;
+
+    const orig = btnEl.textContent;
+    btnEl.textContent = '...';
+    btnEl.disabled    = true;
+
+    try {
+        const res  = await fetch('/quotation_api.php?action=load&id=' + encodeURIComponent(id));
+        const json = await res.json();
+
+        if (!json.ok) {
+            showToast('❌ Hindi ma-load ang quotation para kopya.', 'error');
+            return;
+        }
+
+        // Generate fresh quotation number for the copy
+        const today  = new Date();
+        const yr     = String(today.getFullYear()).slice(-2);
+        const mo     = String(today.getMonth() + 1).padStart(2, '0');
+        const rnd    = String(Math.floor(Math.random() * 9000) + 1000);
+        const newQNum = `QT-${yr}${mo}-${rnd}`;
+
+        const payload = { ...json.data, quotation_number: newQNum };
+        delete payload.id;   // remove original ID so it inserts as new
+
+        const saveRes  = await fetch('/quotation_api.php?action=save', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(payload)
+        });
+        const saveJson = await saveRes.json();
+
+        if (saveJson.ok) {
+            // Load the new copy into the form
+            const loadRes  = await fetch('/quotation_api.php?action=load&id=' + encodeURIComponent(saveJson.data.id));
+            const loadJson = await loadRes.json();
+            if (loadJson.ok) {
+                applyFormData(loadJson.data);
+                closeSavedModal();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                showToast('📋 Kopya na-load! Naka-edit ka na ng bagong kopya.', 'copy');
+            }
+        } else {
+            showToast('❌ ' + (saveJson.message || 'Error sa pag-kopya.'), 'error');
+        }
+    } catch (e) {
+        showToast('❌ Network error.', 'error');
+    } finally {
+        btnEl.textContent = orig;
+        btnEl.disabled    = false;
     }
 }
 
