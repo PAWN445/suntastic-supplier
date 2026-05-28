@@ -93,6 +93,12 @@ $totalItems    = count($items);
             <a href="/quotation.php" class="btn-quotation">
                 📄 Quotation
             </a>
+            <a href="/material.php" class="btn-quotation">
+                📄 Item Cost
+            </a>
+            <a href="/material.php" class="btn-quotation">
+                📄 Cost of Materials
+            </a>
             <a href="add.php" class="btn btn-primary">
                 <span class="btn-icon">+</span> Magdagdag
             </a>
