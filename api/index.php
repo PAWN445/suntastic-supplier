@@ -94,9 +94,6 @@ $totalItems    = count($items);
                 📄 Quotation
             </a>
             <a href="/material.php" class="btn-quotation">
-                📄 Item Cost
-            </a>
-            <a href="/material.php" class="btn-quotation">
                 📄 Cost of Materials
             </a>
             <a href="add.php" class="btn btn-primary">
