@@ -1375,13 +1375,46 @@ function closePicker() {
     document.getElementById('pickerOverlay').classList.remove('active');
     pickerTarget = null;
 }
-function pickItem(name, supplier) {
+function pickItem(name, supplier, imageUrl) {
     if (!pickerTarget) return;
     const el = document.querySelector(`.item-row-ui[data-id="${pickerTarget}"]`);
     if (el) {
         el.querySelector('[data-field="name"]').value = name;
         el.querySelector('[data-field="desc"]').value = supplier;
         el.querySelector('[data-field="price"]').focus();
+
+        // ── Auto-load ng image mula sa supplier DB ──
+        if (imageUrl) {
+            const id        = pickerTarget;
+            const thumb     = document.getElementById(`imgThumb-${id}`);
+            const ph        = document.getElementById(`imgPlaceholder-${id}`);
+            const removeBtn = document.getElementById(`imgRemove-${id}`);
+
+            // I-fetch ang image as base64 para ma-embed sa PDF
+            fetch(imageUrl)
+                .then(r => r.blob())
+                .then(blob => {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        rowImages[id]          = e.target.result;
+                        thumb.src              = e.target.result;
+                        thumb.style.display    = 'block';
+                        ph.style.display       = 'none';
+                        removeBtn.style.display = 'block';
+                        renderPreview();
+                    };
+                    reader.readAsDataURL(blob);
+                })
+                .catch(() => {
+                    // Kung hindi ma-fetch (CORS etc.), gamitin ang URL direkta
+                    rowImages[id]          = imageUrl;
+                    thumb.src              = imageUrl;
+                    thumb.style.display    = 'block';
+                    ph.style.display       = 'none';
+                    removeBtn.style.display = 'block';
+                    renderPreview();
+                });
+        }
     }
     closePicker();
     renderPreview();
@@ -1413,7 +1446,7 @@ function renderPicker(items) {
     Object.keys(groups).sort().forEach(s => {
         html += `<div class="picker-sup-lbl">🏭 ${he(s)}</div>`;
         groups[s].forEach(it => {
-            html += `<div class="picker-item" onclick="pickItem('${escJs(it.item_name)}','${escJs(it.supplier_name)}')">
+            html += `<div class="picker-item" onclick="pickItem('${escJs(it.item_name)}','${escJs(it.supplier_name)}','${escJs(it.image_url || '')}')">
                 <div class="picker-item-ico">${itemIcon(it.item_name)}</div>
                 <div>
                     <div class="picker-item-name">${he(it.item_name)}</div>
