@@ -603,15 +603,15 @@ input:checked + .sw-track::before { transform: translateX(16px); }
                     </div>
                     <div class="fp-group span2">
                         <label class="fp-label">Address</label>
-                        <input class="fp-input" id="coAddr" value="Quezon City, Metro Manila" oninput="markUnsaved(); renderPreview()">
+                        <input class="fp-input" id="coAddr" value="1053 Zabarte rd, Caloocan city" oninput="markUnsaved(); renderPreview()">
                     </div>
                     <div class="fp-group">
                         <label class="fp-label">Email</label>
-                        <input class="fp-input" id="coEmail" value="info@suntastic.ph" oninput="markUnsaved(); renderPreview()">
+                        <input class="fp-input" id="coEmail" value="suntasticsolarcorporation@gmail.com" oninput="markUnsaved(); renderPreview()">
                     </div>
                     <div class="fp-group">
                         <label class="fp-label">Telephone</label>
-                        <input class="fp-input" id="coTel" value="+63 917 000 0000" oninput="markUnsaved(); renderPreview()">
+                        <input class="fp-input" id="coTel" value="(02) 8641 6976" oninput="markUnsaved(); renderPreview()">
                     </div>
                 </div>
             </div>
