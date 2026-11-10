@@ -1573,7 +1573,7 @@ function showToast(msg, type = 'success') {
     toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
 }
 
-// ── PDF EXPORT (html2canvas → jsPDF, full height fix) ─────────
+// ── PDF EXPORT (html2canvas → jsPDF, LONG BOND PAPER 8.5 x 13 in) ─────────
 async function exportPDF() {
     const { jsPDF } = window.jspdf;
     const qNum = document.getElementById('qNumBadge').textContent;
@@ -1608,7 +1608,8 @@ async function exportPDF() {
 
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        // LONG BOND PAPER (8.5 x 13 in) = 215.9 x 330.2 mm
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [215.9, 330.2] });
 
         const pageW   = doc.internal.pageSize.getWidth();
         const pageH   = doc.internal.pageSize.getHeight();
@@ -1622,8 +1623,18 @@ async function exportPDF() {
         const printedH = imgH / pxPerMm;
 
         if (printedH <= usableH) {
+            // Kasya na sa isang long bond
             doc.addImage(imgData, 'JPEG', margin, margin, usableW, printedH);
+
+        } else if (printedH <= usableH * 1.15) {
+            // Bahagyang lampas lang (hanggang 15%): i-shrink para sa isang page
+            const scale = usableH / printedH;
+            const w     = usableW * scale;
+            const x     = margin + (usableW - w) / 2;   // naka-center
+            doc.addImage(imgData, 'JPEG', x, margin, w, usableH);
+
         } else {
+            // Sobrang haba: hatiin sa maraming pages
             const sliceHeightPx = Math.floor(usableH * pxPerMm);
             let offsetPx = 0;
             let pageNum  = 0;
