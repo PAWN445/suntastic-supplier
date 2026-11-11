@@ -77,7 +77,7 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= $receipt ? 'Acknowledgement Receipt ' . e($receipt['ar_no']) : 'New acknowledgement receipt' ?> | Suntastic</title>
+<title><?= $receipt ? 'Invoice ' . e($receipt['ar_no']) : 'Invoice' ?> | Suntastic</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
@@ -275,7 +275,7 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
     <header class="band">
       <img src="<?= $logo ?>" alt="Suntastic Solar Corporation">
       <div class="band-title">
-        <h1>Acknowledgement Receipt</h1>
+        <h1>Invoice</h1>
         <p>No. <?= e($receipt['ar_no']) ?><br><?= e(date('F j, Y', strtotime($receipt['date']))) ?></p>
       </div>
     </header>
@@ -346,7 +346,7 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
 
     <footer class="foot">
       <span><b>Suntastic Solar Corporation</b></span>
-      <span>Acknowledgement receipt only. Not an official receipt (OR).</span>
+      <span>Invoice</span>
     </footer>
   </main>
 
@@ -457,4 +457,4 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
 <?php endif; ?>
 
 </body>
-</html>
+</html>z`

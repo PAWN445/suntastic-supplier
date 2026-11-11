@@ -91,7 +91,7 @@ $totalItems    = count($items);
         </div>
         <div class="header-actions">
             <a href="/acknowledgementreceipt.php" class="btn-quotation">
-                📄 Acknowledgement receipt
+                📄 Invoice
             </a>
             <a href="/quotation.php" class="btn-quotation">
                 📄 Quotation
