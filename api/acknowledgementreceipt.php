@@ -250,9 +250,10 @@ $phone = '(02) 8641 6976';
     table.items { font-size: 14px; }
   }
 
-  @page { margin: 10mm; }
+  /* margin 0 removes the browser's own header/footer (URL, date, time, page title) */
+  @page { margin: 0; }
   @media print {
-    body { padding: 0; }
+    body { padding: 12mm 12mm 10mm; }
     .sheet { border: 0; border-radius: 0; max-width: none; }
     .screen-actions { display: none; }
     .stripe, table.items th {
