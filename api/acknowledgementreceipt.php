@@ -362,7 +362,7 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
     <header class="band">
       <img src="<?= $logo ?>" alt="Suntastic Solar Corporation">
       <div class="band-title">
-        <h1>New acknowledgement receipt</h1>
+        <h1>Invoice</h1>
         <p><a href="/index.php">&larr; Back to suppliers</a></p>
       </div>
     </header>
