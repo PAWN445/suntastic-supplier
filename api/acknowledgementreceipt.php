@@ -389,10 +389,6 @@ $phone = '(02) 8641 6976';
             <label for="received_by">Received by</label>
             <input id="received_by" name="received_by" value="<?= $v('received_by') ?>" placeholder="Name of receiver" required>
           </div>
-          <div class="full">
-            <label for="reference">Reference (quotation or PO number)</label>
-            <input id="reference" name="reference" value="<?= $v('reference') ?>">
-          </div>
         </div>
 
         <h2>Items</h2>
