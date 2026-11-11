@@ -43,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $names = (array)($_POST['name'] ?? []);
     $descs = (array)($_POST['desc'] ?? []);
     $qtys  = (array)($_POST['qty'] ?? []);
-    $units = (array)($_POST['unit'] ?? []);
     $amts  = (array)($_POST['amount'] ?? []);
 
     foreach ($names as $i => $n) {
@@ -55,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'name'   => $n,
             'desc'   => trim((string)($descs[$i] ?? '')),
             'qty'    => $qty,
-            'unit'   => trim((string)($units[$i] ?? '')),
             'amount' => $amt,
             'total'  => $qty * $amt,
         ];
@@ -305,7 +303,6 @@ $phone = '(02) 8641 6976';
             <th>Item name</th>
             <th>Description</th>
             <th class="num">Quantity</th>
-            <th>Unit</th>
             <th class="num">Amount</th>
             <th class="num">Total</th>
           </tr>
@@ -316,7 +313,6 @@ $phone = '(02) 8641 6976';
             <td class="name"><?= e($it['name']) ?></td>
             <td class="desc"><?= e($it['desc']) ?></td>
             <td class="num"><?= e(qtyFmt($it['qty'])) ?></td>
-            <td><?= e($it['unit']) ?></td>
             <td class="num"><?= e(peso($it['amount'])) ?></td>
             <td class="num"><?= e(peso($it['total'])) ?></td>
           </tr>
@@ -406,7 +402,6 @@ $phone = '(02) 8641 6976';
               <th>Item name</th>
               <th>Description</th>
               <th style="width:76px">Quantity</th>
-              <th style="width:84px">Unit</th>
               <th style="width:110px">Amount</th>
               <th style="width:40px"></th>
             </tr>
@@ -417,7 +412,6 @@ $phone = '(02) 8641 6976';
               <td><input name="name[]" value="<?= e((string)$n) ?>" aria-label="Item name"></td>
               <td><input name="desc[]" value="<?= e((string)($_POST['desc'][$i] ?? '')) ?>" aria-label="Description"></td>
               <td><input name="qty[]" type="number" min="0" step="any" value="<?= e((string)($_POST['qty'][$i] ?? '1')) ?>" aria-label="Quantity"></td>
-              <td><input name="unit[]" value="<?= e((string)($_POST['unit'][$i] ?? '')) ?>" placeholder="pcs" aria-label="Unit"></td>
               <td><input name="amount[]" type="number" min="0" step="0.01" value="<?= e((string)($_POST['amount'][$i] ?? '0')) ?>" aria-label="Amount"></td>
               <td><button type="button" class="rm" onclick="removeRow(this)" aria-label="Remove item">&times;</button></td>
             </tr>
