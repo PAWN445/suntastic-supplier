@@ -40,30 +40,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($in['date'] === '')          $errors[] = 'Choose the date received.';
 
     $items = [];
+    $names = (array)($_POST['name'] ?? []);
     $descs = (array)($_POST['desc'] ?? []);
     $qtys  = (array)($_POST['qty'] ?? []);
-    $units = (array)($_POST['unit'] ?? []);
     $amts  = (array)($_POST['amount'] ?? []);
+    $taxes = (array)($_POST['tax'] ?? []);
 
-    foreach ($descs as $i => $d) {
-        $d = trim((string)$d);
-        if ($d === '') continue;
-        $qty = max(0.0, (float)($qtys[$i] ?? 0));
-        $amt = max(0.0, (float)($amts[$i] ?? 0));
+    foreach ($names as $i => $n) {
+        $n = trim((string)$n);
+        if ($n === '') continue;
+        $qty  = max(0.0, (float)($qtys[$i] ?? 0));
+        $amt  = max(0.0, (float)($amts[$i] ?? 0));
+        $rate = max(0.0, (float)($taxes[$i] ?? 0));   // tax rate in percent
+        $sub  = $qty * $amt;
+        $tax  = round($sub * $rate / 100, 2);
         $items[] = [
-            'desc'   => $d,
+            'name'   => $n,
+            'desc'   => trim((string)($descs[$i] ?? '')),
             'qty'    => $qty,
-            'unit'   => trim((string)($units[$i] ?? '')),
             'amount' => $amt,
-            'total'  => $qty * $amt,
+            'rate'   => $rate,
+            'sub'    => $sub,
+            'tax'    => $tax,
+            'total'  => $sub + $tax,
         ];
     }
-    if (!$items) $errors[] = 'Add at least one item with a description.';
+    if (!$items) $errors[] = 'Add at least one item with an item name.';
 
     if (!$errors) {
         $receipt = $in + [
             'items' => $items,
-            'grand' => array_sum(array_column($items, 'total')),
+            'subtotal' => array_sum(array_column($items, 'sub')),
+            'taxtotal' => array_sum(array_column($items, 'tax')),
+            'grand'    => array_sum(array_column($items, 'total')),
         ];
     }
 }
@@ -86,7 +95,7 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
     --charcoal: #292929;          /* same flat grey as the logo artwork */
     --green: #23895a;             /* taken from the logo's bolt */
     --green-bright: #3dbb85;
-    --desk: #141414;
+    --desk: #ffffff;
     --font-head: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
     --font-body: 'Outfit', 'Segoe UI', system-ui, sans-serif;
   }
@@ -107,13 +116,13 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
     color: var(--fg);
     border-radius: 6px;
     overflow: hidden;
-    box-shadow: 0 12px 40px rgba(0,0,0,.45);
+    box-shadow: 0 0 0 1px #dfe3e0, 0 8px 24px rgba(0,0,0,.08);
   }
   .sheet.paper {
     --bg: #ffffff; --fg: #1e2421; --muted: #66706b; --line: #dfe3e0; --soft: #f1f4f2;
   }
   .sheet.form {
-    --bg: #1d1d1d; --fg: #ececec; --muted: #9aa39e; --line: #3a3a3a; --field: #292929;
+    --bg: #ffffff; --fg: #1e2421; --muted: #66706b; --line: #cfd5d1; --field: #ffffff;
   }
 
   .band {
@@ -154,11 +163,11 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
     color: var(--fg);
     font: 15px/1.4 var(--font-body);
   }
-  input::placeholder { color: #6d7571; }
+  input::placeholder { color: #9aa39e; }
   input:focus, textarea:focus {
     outline: none;
-    border-color: var(--green-bright);
-    box-shadow: 0 0 0 3px rgba(61,187,133,.22);
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(35,137,90,.18);
   }
   button:focus-visible, .btn:focus-visible { outline: 2px solid var(--green-bright); outline-offset: 2px; }
   textarea { min-height: 80px; resize: vertical; }
@@ -183,17 +192,17 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
   }
   .btn:hover, button:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(35,137,90,.35); }
   .btn.ghost, button.ghost {
-    background: transparent; color: var(--green-bright); border-color: rgba(61,187,133,.5);
+    background: transparent; color: var(--green); border-color: var(--green);
   }
   .sheet.paper .btn.ghost { color: var(--green); border-color: var(--green); }
   button.rm {
-    background: none; border: 0; color: #e07a73; padding: 6px 10px; font-size: 20px; box-shadow: none;
+    background: none; border: 0; color: #c0392b; padding: 6px 10px; font-size: 20px; box-shadow: none;
   }
   .actions { margin-top: 26px; display: flex; gap: 10px; flex-wrap: wrap; }
   .errors {
     border-left: 4px solid #e05a50;
-    background: rgba(224,90,80,.12);
-    color: #f3b3ae;
+    background: #fdf1f0;
+    color: #a3261f;
     padding: 10px 14px;
     margin-bottom: 22px;
     border-radius: 0 6px 6px 0;
@@ -218,8 +227,14 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
   table.items td { padding: 11px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
   .num { text-align: right; white-space: nowrap; }
 
+  table.items td.name { font-weight: 600; }
+  table.items td.desc { color: var(--muted); font-size: 14px; }
+  small.rate { display: block; color: var(--muted); font-size: 12px; }
+  .summary { margin: 18px 0 0 auto; width: min(100%, 320px); font-size: 15px; }
+  .summary div { display: flex; justify-content: space-between; gap: 16px; padding: 4px 2px; color: var(--muted); }
+  .summary b { color: var(--fg); font-weight: 500; }
   .total {
-    margin: 18px 0 0 auto;
+    margin: 8px 0 0 auto;
     width: min(100%, 320px);
     background: var(--charcoal);
     color: #fff;
@@ -306,25 +321,32 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
       <table class="items">
         <thead>
           <tr>
+            <th>Item name</th>
             <th>Description</th>
-            <th class="num">Qty</th>
-            <th>Unit</th>
+            <th class="num">Quantity</th>
             <th class="num">Amount</th>
+            <th class="num">Tax</th>
             <th class="num">Total</th>
           </tr>
         </thead>
         <tbody>
           <?php foreach ($receipt['items'] as $it): ?>
           <tr>
-            <td><?= e($it['desc']) ?></td>
+            <td class="name"><?= e($it['name']) ?></td>
+            <td class="desc"><?= e($it['desc']) ?></td>
             <td class="num"><?= e(qtyFmt($it['qty'])) ?></td>
-            <td><?= e($it['unit']) ?></td>
             <td class="num"><?= e(peso($it['amount'])) ?></td>
+            <td class="num"><?= e(peso($it['tax'])) ?><small class="rate"><?= e(qtyFmt($it['rate'])) ?>%</small></td>
             <td class="num"><?= e(peso($it['total'])) ?></td>
           </tr>
           <?php endforeach; ?>
         </tbody>
       </table>
+
+      <div class="summary">
+        <div><span>Subtotal</span><b><?= e(peso($receipt['subtotal'])) ?></b></div>
+        <div><span>Tax</span><b><?= e(peso($receipt['taxtotal'])) ?></b></div>
+      </div>
 
       <div class="total">
         <span>Total</span>
@@ -401,24 +423,26 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
           </div>
         </div>
 
-        <h2>Items received</h2>
+        <h2>Items</h2>
         <table class="rows">
           <thead>
             <tr>
+              <th>Item name</th>
               <th>Description</th>
-              <th style="width:84px">Qty</th>
-              <th style="width:96px">Unit</th>
-              <th style="width:128px">Amount</th>
-              <th style="width:44px"></th>
+              <th style="width:76px">Quantity</th>
+              <th style="width:110px">Amount</th>
+              <th style="width:76px">Tax %</th>
+              <th style="width:40px"></th>
             </tr>
           </thead>
           <tbody id="rows">
-            <?php foreach (($_POST['desc'] ?? ['']) as $i => $d): ?>
+            <?php foreach (($_POST['name'] ?? ['']) as $i => $n): ?>
             <tr>
-              <td><input name="desc[]" value="<?= e((string)$d) ?>" aria-label="Description"></td>
+              <td><input name="name[]" value="<?= e((string)$n) ?>" aria-label="Item name"></td>
+              <td><input name="desc[]" value="<?= e((string)($_POST['desc'][$i] ?? '')) ?>" aria-label="Description"></td>
               <td><input name="qty[]" type="number" min="0" step="any" value="<?= e((string)($_POST['qty'][$i] ?? '1')) ?>" aria-label="Quantity"></td>
-              <td><input name="unit[]" value="<?= e((string)($_POST['unit'][$i] ?? '')) ?>" placeholder="pcs" aria-label="Unit"></td>
               <td><input name="amount[]" type="number" min="0" step="0.01" value="<?= e((string)($_POST['amount'][$i] ?? '0')) ?>" aria-label="Amount"></td>
+              <td><input name="tax[]" type="number" min="0" step="any" value="<?= e((string)($_POST['tax'][$i] ?? '12')) ?>" aria-label="Tax percent"></td>
               <td><button type="button" class="rm" onclick="removeRow(this)" aria-label="Remove item">&times;</button></td>
             </tr>
             <?php endforeach; ?>
@@ -443,7 +467,7 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
       var body = document.getElementById('rows');
       var tr = body.rows[0].cloneNode(true);
       tr.querySelectorAll('input').forEach(function (i) {
-        i.value = i.name === 'qty[]' ? '1' : (i.name === 'amount[]' ? '0' : '');
+        i.value = i.name === 'qty[]' ? '1' : (i.name === 'amount[]' ? '0' : (i.name === 'tax[]' ? '12' : ''));
       });
       body.appendChild(tr);
       tr.querySelector('input').focus();
@@ -457,4 +481,4 @@ $logo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgID
 <?php endif; ?>
 
 </body>
-</html>z`
+</html>
