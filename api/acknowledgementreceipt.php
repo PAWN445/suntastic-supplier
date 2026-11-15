@@ -382,7 +382,7 @@ $phone = '(02) 8641 6976';
             <input id="date" name="date" type="date" value="<?= $v('date', date('Y-m-d')) ?>" required>
           </div>
           <div>
-            <label for="received_from">Received from</label>
+            <label for="received_from">Delivered from</label>
             <input id="received_from" name="received_from" value="<?= $v('received_from') ?>" placeholder="Supplier or person's name" required>
           </div>
           <div>
