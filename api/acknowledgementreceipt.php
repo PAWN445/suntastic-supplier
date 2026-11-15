@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'remarks'       => trim($_POST['remarks'] ?? ''),
     ];
 
-    if ($in['received_from'] === '') $errors[] = 'Enter who the items or payment were received from.';
+    if ($in['received_from'] === '') $errors[] = 'Enter who the items or payment were delivered from.';
     if ($in['received_by'] === '')   $errors[] = 'Enter who received them.';
     if ($in['date'] === '')          $errors[] = 'Choose the date received.';
 
