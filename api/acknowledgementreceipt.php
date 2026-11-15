@@ -278,7 +278,7 @@ $phone = '(02) 8641 6976';
     <div class="body">
       <section class="parties">
         <div>
-          <div class="label">Received from</div>
+          <div class="label">Delivered from</div>
           <div class="value"><?= e($receipt['received_from']) ?></div>
         </div>
         <div>
@@ -334,7 +334,7 @@ $phone = '(02) 8641 6976';
 
       <div class="sign">
         <div><?= e($receipt['received_by']) ?><small>Received by. Signature over printed name</small></div>
-        <div><?= e($receipt['received_from']) ?><small>Received from. Signature over printed name</small></div>
+        <div><?= e($receipt['received_from']) ?><small>Delivered from. Signature over printed name</small></div>
       </div>
     </div>
 
