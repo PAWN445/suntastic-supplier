@@ -42,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $items = [];
     $names = (array)($_POST['name'] ?? []);
     $descs = (array)($_POST['desc'] ?? []);
-    $qtys  = (array)($_POST['qty'] ?? []);
     $amts  = (array)($_POST['amount'] ?? []);
 
     foreach ($names as $i => $n) {
@@ -53,7 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $items[] = [
             'name'   => $n,
             'desc'   => trim((string)($descs[$i] ?? '')),
-            'qty'    => $qty,
             'amount' => $amt,
             'total'  => $qty * $amt,
         ];
@@ -311,7 +309,6 @@ $phone = '(02) 8641 6976';
           <tr>
             <td class="name"><?= e($it['name']) ?></td>
             <td class="desc"><?= e($it['desc']) ?></td>
-            <td class="num"><?= e(qtyFmt($it['qty'])) ?></td>
             <td class="num"><?= e(peso($it['amount'])) ?></td>
             <td class="num"><?= e(peso($it['total'])) ?></td>
           </tr>
@@ -435,7 +432,7 @@ $phone = '(02) 8641 6976';
       var body = document.getElementById('rows');
       var tr = body.rows[0].cloneNode(true);
       tr.querySelectorAll('input').forEach(function (i) {
-        i.value = i.name === 'qty[]' ? '1' : (i.name === 'amount[]' ? '0' : '');
+        i.value = i.name === 'amount[]' ? '0' : '';
       });
       body.appendChild(tr);
       tr.querySelector('input').focus();
