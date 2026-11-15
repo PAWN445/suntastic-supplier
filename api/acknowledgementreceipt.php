@@ -47,13 +47,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($names as $i => $n) {
         $n = trim((string)$n);
         if ($n === '') continue;
-        $qty = max(0.0, (float)($qtys[$i] ?? 0));
         $amt = max(0.0, (float)($amts[$i] ?? 0));
         $items[] = [
             'name'   => $n,
             'desc'   => trim((string)($descs[$i] ?? '')),
             'amount' => $amt,
-            'total'  => $qty * $amt,
+            'total'  => $amt,
         ];
     }
     if (!$items) $errors[] = 'Add at least one item with an item name.';
