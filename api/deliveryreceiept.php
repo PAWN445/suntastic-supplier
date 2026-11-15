@@ -30,7 +30,7 @@ $items = [
     ['qty' => 2,  'unit' => 'box', 'description' => 'Mounting rail kit',                 'note' => '',                    'price' => 3200.00],
 ];
 
-$showPrices = true; // gawing false kung walang presyo sa DR
+$showPrices = false; // gawing false kung walang presyo sa DR
 
 function e($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
@@ -184,7 +184,7 @@ $grandTotal = 0;
 <div class="sheet">
 
     <header class="head">
-        <img class="logo" src="logo_suntastic.png" alt="<?= e($company['name']) ?>">
+        <img class="logo" src="assets/images/logo_suntastic.png" alt="<?= e($company['name']) ?>">
         <div class="doc">
             <h1>Delivery Receipt</h1>
             <dl>
