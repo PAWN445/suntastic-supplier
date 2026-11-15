@@ -16,7 +16,6 @@ function e($value) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delivery Receipt - <?= e($company['name']) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
@@ -130,10 +129,11 @@ function e($value) {
             .paper { padding: 12px; }
         }
 
-        @page { size: A4; margin: 12mm; }
+        /* margin: 0 = nawawala ang date, time, at title na nilalagay ng browser sa print */
+        @page { size: A4; margin: 0; }
         @media print {
             .form-pane { display: none; }
-            .app { display: block; padding: 0; }
+            .app { display: block; padding: 12mm; }
             .paper { border: 0; padding: 0; overflow: visible; }
             .receipt { max-width: none; min-width: 0; }
         }
