@@ -2,10 +2,9 @@
 // Company details. Palitan ng totoong impormasyon.
 $company = [
     'name'    => 'Suntastic Solar Corporation',
-    'address' => 'Palitan ng company address, Quezon City',
-    'contact' => '0900-000-0000',
-    'email'   => 'info@example.com',
-    'tin'     => '000-000-000-000',
+    'address' => '1053 zapote rd, camarin caloocan city, metro manila, philippines',
+    'contact' => '(02) 8641 6976',
+    'email'   => 'suntasticsolarcorporation@gmail.com',
 ];
 
 function e($value) {
@@ -116,7 +115,7 @@ function e($value) {
         .receipt .ctr { text-align: center; }
 
         .receipt .ack { color: var(--muted); font-size: 14px; margin: 22px 0 0; }
-        .receipt .sign { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 58px; }
+        .receipt .sign { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px; margin-top: 58px; }
         .receipt .sign div { border-top: 1.5px solid var(--forest); padding-top: 6px; font-size: 13px; color: var(--muted); }
         .receipt .sign b { display: block; color: var(--ink); font-size: 14px; min-height: 1.4em; }
         .receipt .foot {
@@ -261,14 +260,13 @@ function e($value) {
 
                 <section class="sign">
                     <div><b id="p-by2"></b>Delivered by</div>
-                    <div><b>&nbsp;</b>Received by (signature over printed name)</div>
+                    <div><b id="p-recv"></b>Received by (signature over printed name)</div>
                 </section>
 
                 <footer class="foot">
                     <span><?= e($company['address']) ?></span>
                     <span>Tel: <?= e($company['contact']) ?></span>
                     <span><?= e($company['email']) ?></span>
-                    <span>TIN: <?= e($company['tin']) ?></span>
                 </footer>
             </div>
         </div>
@@ -344,6 +342,7 @@ function e($value) {
         $('p-terms').textContent   = val('terms');
         $('p-by').textContent      = val('delivered_by');
         $('p-by2').textContent     = val('delivered_by');
+        $('p-recv').textContent    = val('customer_name');
 
         var tbody = $('p-items');
         tbody.textContent = '';
