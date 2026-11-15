@@ -274,7 +274,8 @@ function e($value) {
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 (function () {
     var $ = function (id) { return document.getElementById(id); };
@@ -374,13 +375,80 @@ function e($value) {
         return '';
     }
 
+    /* ---------- PDF: A4, 12mm margin, kasya ang lahat ---------- */
+    async function buildPdfBlob() {
+        var MARGIN = 12, PAGE_W = 210, PAGE_H = 297;          // mm
+        var CW_MM = PAGE_W - MARGIN * 2;                       // 186mm na lapad ng laman
+        var CH_MM = PAGE_H - MARGIN * 2;                       // 273mm na taas ng laman bawat page
+        var PX_PER_MM = 96 / 25.4;
+        var cw = Math.round(CW_MM * PX_PER_MM);                // lapad ng receipt sa px
+        var pageHpx = Math.floor(CH_MM * PX_PER_MM);           // taas bawat page sa px
+
+        // Kopya ng receipt na eksaktong kasya sa A4 (hindi nakadepende sa laki ng screen)
+        var host = document.createElement('div');
+        host.style.cssText = 'position:fixed;top:0;left:0;z-index:-1;background:#fff;width:' + cw + 'px;';
+        var clone = document.querySelector('.receipt').cloneNode(true);
+        clone.querySelectorAll('[id]').forEach(function (n) { n.removeAttribute('id'); });
+        clone.style.cssText = 'width:' + cw + 'px;min-width:0;max-width:none;margin:0;';
+        host.appendChild(clone);
+        document.body.appendChild(host);
+
+        try {
+            var canvas = await html2canvas(host, {
+                scale: 3, backgroundColor: '#ffffff', useCORS: true, logging: false,
+                windowWidth: cw, scrollX: 0, scrollY: 0
+            });
+            var k = canvas.width / cw;               // canvas px bawat CSS px
+            var total = canvas.height / k;           // kabuuang taas sa CSS px
+            var top0 = host.getBoundingClientRect().top;
+
+            // Mga puwedeng putulin na lugar (pagitan ng rows/sections) para walang naka-hati na row
+            var cuts = [];
+            function addCut(el) { if (el) cuts.push(el.getBoundingClientRect().bottom - top0); }
+            host.querySelectorAll('tbody tr').forEach(addCut);
+            ['.head', '.info', 'table', '.ack', '.sign'].forEach(function (sel) { addCut(host.querySelector(sel)); });
+
+            var pages = [], start = 0;
+            while (start < total - 1) {
+                var limit = start + pageHpx, end;
+                if (total <= limit + 1) {
+                    end = total;
+                } else {
+                    end = 0;
+                    cuts.forEach(function (c) { if (c > start + 40 && c <= limit && c > end) end = c; });
+                    if (!end) end = limit;
+                }
+                pages.push([start, end]);
+                start = end;
+            }
+
+            var pdf = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+            pages.forEach(function (pg, i) {
+                var sy = Math.round(pg[0] * k);
+                var sh = Math.min(canvas.height - sy, Math.round((pg[1] - pg[0]) * k));
+                var slice = document.createElement('canvas');
+                slice.width = canvas.width;
+                slice.height = sh;
+                var ctx = slice.getContext('2d');
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, slice.width, slice.height);
+                ctx.drawImage(canvas, 0, sy, canvas.width, sh, 0, 0, canvas.width, sh);
+                if (i > 0) pdf.addPage();
+                pdf.addImage(slice.toDataURL('image/jpeg', 0.95), 'JPEG', MARGIN, MARGIN, CW_MM, (sh / k) * (CW_MM / cw));
+            });
+            return pdf.output('blob');
+        } finally {
+            host.remove();
+        }
+    }
+
     /* ---------- Save as PDF (sa computer mo) ---------- */
     var saving = false;
     async function savePdf() {
         if (saving) return;
         var problem = validate();
         if (problem) { setStatus(problem, true); return; }
-        if (typeof html2pdf === 'undefined') {
+        if (typeof html2canvas === 'undefined' || !window.jspdf) {
             setStatus('The PDF tool could not load (no internet?). Click Print, then choose Save as PDF.', true);
             return;
         }
@@ -406,14 +474,7 @@ function e($value) {
         setStatus('Preparing PDF…');
         try {
             await document.fonts.ready;
-            var blob = await html2pdf().set({
-                margin: 10,
-                filename: fileName,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, scrollX: 0, scrollY: 0 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['css', 'legacy'] }
-            }).from(document.querySelector('.receipt')).outputPdf('blob');
+            var blob = await buildPdfBlob();
 
             if (handle) {
                 var w = await handle.createWritable();
