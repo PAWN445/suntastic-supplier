@@ -184,7 +184,7 @@ $grandTotal = 0;
 <div class="sheet">
 
     <header class="head">
-        <img class="logo" src="assets/images/logo_suntastic.png" alt="<?= e($company['name']) ?>">
+        <img class="logo" src="../assets/images/logo_suntastic.png" alt="<?= e($company['name']) ?>">
         <div class="doc">
             <h1>Delivery Receipt</h1>
             <dl>
