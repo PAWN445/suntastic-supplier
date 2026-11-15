@@ -260,9 +260,8 @@ function e($value) {
                 <p class="ack">Received the above items in good order and condition.</p>
 
                 <section class="sign">
-                    <div><b>&nbsp;</b>Prepared by</div>
                     <div><b id="p-by2"></b>Delivered by</div>
-                    <div><b>&nbsp;</b>Received by (signature over printed name and date)</div>
+                    <div><b>&nbsp;</b>Received by (signature over printed name)</div>
                 </section>
 
                 <footer class="foot">
