@@ -93,6 +93,9 @@ $totalItems    = count($items);
             <a href="/acknowledgementreceipt.php" class="btn-quotation">
                 📄 Invoice
             </a>
+            <a href="/deliveryreceiept.php" class="btn-quotation">
+                📄 Delivery Receipt
+            </a>
             <a href="/quotation.php" class="btn-quotation">
                 📄 Quotation
             </a>
